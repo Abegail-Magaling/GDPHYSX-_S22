@@ -141,8 +141,31 @@ int main(void)
     //    100.f);//Zfar
     
 
-    physics::MyVector position(0, 0, 0);
-    physics::MyVector scale(0.1, 0.1, 0.1);
+    physics::MyVector position(0, 3, 0);
+    physics::MyVector scale(3, 3, 0);
+
+    std::cout << "Magnitude" << std::endl;
+    std::cout << position.Magnitude() << std::endl;
+    std::cout << scale.Magnitude() << std::endl;
+
+    std::cout << "Direction" << std::endl;
+    std::cout << position.direction().x << std::endl;
+    std::cout << position.direction().y << std::endl;
+    std::cout << position.direction().z << std::endl;
+
+    std::cout << "Scalar Multiplication" << std::endl;
+    std::cout << position.ScalarMultiplication(2.f).x << std::endl;
+    std::cout << position.ScalarMultiplication(2.f).y << std::endl;
+    std::cout << position.ScalarMultiplication(2.f).z << std::endl;
+
+    std::cout << "Dot Product" << std::endl;
+    std::cout << position.DotProd(scale) << std::endl;
+
+    std::cout << "Cross Product" << std::endl;
+    std::cout << position.crossProd(scale).x << std::endl;
+    std::cout << position.crossProd(scale).y << std::endl;
+    std::cout << position.crossProd(scale).z << std::endl;
+
   
     //position += physics::MyVector(0.7, -0.7, 0);
 
@@ -151,7 +174,7 @@ int main(void)
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        scale *= physics::MyVector(1.02, 1.02, 1.02);
+        //scale *= physics::MyVector(1.02, 1.02, 1.02);
 
         glm::mat4 transformation_matrix = glm::translate(identity_martix, (glm::vec3)position);
         transformation_matrix = glm::scale(transformation_matrix, (glm::vec3)scale);
