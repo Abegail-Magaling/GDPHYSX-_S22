@@ -16,6 +16,11 @@ MyVector MyVector::direction() const
 	return mag == 0 ? MyVector(0, 0, 0) : MyVector(x / mag, y / mag, z / mag);
 }
 
+MyVector physics::MyVector::operator+(const MyVector v)
+{
+	return MyVector(this-> x + v.x, this->y + v.y, this->z + v.z);
+}
+
 void MyVector::operator+= (const MyVector v) {
 	this->x += v.x;
 	this->y += v.y;
@@ -30,7 +35,7 @@ void MyVector::operator-= (const MyVector v) {
 
 MyVector physics::MyVector::ScalarMultiplication(const float toScale) const
 {
-	return MyVector(toScale * x, toScale * y, toScale * z);
+	return MyVector(toScale * this->x, toScale * this->y, toScale *this->z);
 }
 
 void MyVector::operator*= (const MyVector v) {

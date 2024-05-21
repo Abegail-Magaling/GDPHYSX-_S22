@@ -3,12 +3,14 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include "P6/PhysicsParticle.h"
 
-#include "P6/MyVector.h"
-
+using namespace std::chrono_literals;
+constexpr std::chrono::nanoseconds timestep(16ms);
 
 //Modifier for the model's x Position
 float theta = 0.0f;
@@ -18,8 +20,8 @@ float axis_x = 0.0f;
 float axis_y = 1.0f;
 float axis_z = 0.0f;
 
-// Adjust initial position and scale of the model
 float x_mod = 0.0f;
+// Adjust initial position and scale of the model
 float y_mod = 0.0f;
 float z_mod = -3.0f;
 
@@ -27,6 +29,10 @@ float scale = 0.5f;
 
 int main(void)
 {
+    using clock = std::chrono::high_resolution_clock;
+    auto curr_time = clock::now();
+    auto prev_time = curr_time;
+    std::chrono::nanoseconds curr_ns(0);
 
     std::fstream vertSrc("Shaders/sample.vert");
     std::stringstream vertBuff;
@@ -132,19 +138,18 @@ int main(void)
 
     glm::mat4 identity_martix = glm::mat4(1.0f);
 
-    //glm::mat4 projectionMatrix = glm::ortho(
-    //    -2.f, //L
-    //    2.f,//R
-    //    -2.f,//B
-    //    2.f,//T
-    //    -1.f,//Znear
-    //    100.f);//Zfar
-    
+    glm::mat4 projectionMatrix = glm::ortho(
+        -400.f, //L
+        400.f,//R
+        -400.f,//B
+        400.f,//T
+        -1.f,//Znear
+        100.f);//Zfar
 
-    physics::MyVector position(0, 3, 0);
-    physics::MyVector scale(3, 3, 0);
+    physics::MyVector position(0, 0, 0);
+    physics::MyVector scale(60, 60, 60);
 
-    std::cout << "Magnitude" << std::endl;
+   /* std::cout << "Magnitude" << std::endl;
     std::cout << position.Magnitude() << std::endl;
     std::cout << scale.Magnitude() << std::endl;
 
@@ -164,23 +169,42 @@ int main(void)
     std::cout << "Cross Product" << std::endl;
     std::cout << position.crossProd(scale).x << std::endl;
     std::cout << position.crossProd(scale).y << std::endl;
-    std::cout << position.crossProd(scale).z << std::endl;
+    std::cout << position.crossProd(scale).z << std::endl;*/
 
-  
-    //position += physics::MyVector(0.7, -0.7, 0);
+    physics::PhysicsParticle particle = physics::PhysicsParticle();
+    particle.Velocity = physics::MyVector(50, 0, 0);
+    particle.Acceleration = physics::MyVector(-20, 0, 0);
 
     while (!glfwWindowShouldClose(window))
     {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //scale *= physics::MyVector(1.02, 1.02, 1.02);
+        curr_time = clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::nanoseconds> (curr_time - prev_time);
+        prev_time = curr_time;
 
-        glm::mat4 transformation_matrix = glm::translate(identity_martix, (glm::vec3)position);
+        curr_ns += dur;
+
+        //std::cout << curr_ns.count();
+
+        if (curr_ns >= timestep) {
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(curr_ns);
+            std::cout << "MS: " << (float)ms.count() << "\n";
+
+            curr_ns -= curr_ns;
+            std::cout << "Physics Update" << std::endl;
+            particle.update((float)ms.count() / 1000);
+        }
+        std::cout << "Normal Update" << std::endl;
+
+        glm::mat4 transformation_matrix = glm::translate(identity_martix, (glm::vec3)particle.Position);
         transformation_matrix = glm::scale(transformation_matrix, (glm::vec3)scale);
         transformation_matrix = glm::rotate(transformation_matrix, glm::radians(theta), glm::normalize(glm::vec3(axis_x, axis_y, axis_z)));
-        /*unsigned int projectionLoc = glGetUniformLocation(shaderProg, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));*/
+
+        unsigned int projectionLoc = glGetUniformLocation(shaderProg, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
         unsigned int transformLoc = glGetUniformLocation(shaderProg, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
         glUseProgram(shaderProg);

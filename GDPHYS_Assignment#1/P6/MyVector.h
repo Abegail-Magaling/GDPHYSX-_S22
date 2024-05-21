@@ -19,6 +19,9 @@ namespace physics {
 			//Direction
 			MyVector direction() const;
 
+			//Base Plus
+			MyVector operator+(const MyVector v);
+
 			//Vector Addition
 			void operator+= (const MyVector v);
 
